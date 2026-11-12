@@ -135,3 +135,6 @@ schedulers.csv
 
 # Work clones of tools/publish.py
 .publish/
+
+# Pages built at export from sources outside this repository
+docs/papers/*/report.md

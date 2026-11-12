@@ -54,7 +54,9 @@ nbsphinx_execute = os.environ.get("NBSPHINX_EXECUTE", "auto")
 copybutton_exclude = ".linenos, .gp, .go"
 
 # MYST configuration
-myst_enable_extensions = ["linkify", "dollarmath", "colon_fence"]
+# attrs_block: the generated pages of the papers give their headings the ids
+# of the Typst export ({#sec-model}), which the links of the paper target.
+myst_enable_extensions = ["linkify", "dollarmath", "colon_fence", "attrs_block"]
 myst_heading_anchors = 3
 myst_links_external_new_tab = True
 
@@ -155,6 +157,8 @@ html_theme_options = {
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ["_static"]
+# Web editions of the papers (Typst HTML export), see docs/papers/.
+html_css_files = ["typst.css"]
 
 html_favicon = "_static/logo.svg"
 

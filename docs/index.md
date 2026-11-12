@@ -7,7 +7,7 @@
 
 presentation/index
 tutorials/index
-companion/index
+papers/index
 reference/index
 :::
 
