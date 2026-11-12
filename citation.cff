@@ -1,0 +1,17 @@
+
+cff-version: 1.2.0
+title: Tinto
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+version: 0.1.0
+date-released: "2026-11-11"
+authors:
+  - family-names: Mathieu
+    given-names: Fabien
+    email: fabien.mathieu@normalesup.org
+repository-code: "https://github.com/balouf/tinto/"
+url: "https://balouf.github.io/tinto/"
+abstract: "How long does a self-stabilizing graph coloring take to settle? Tinto measures it with a Numba-compiled Monte Carlo over pluggable graphs, guards, schedulers and recoloring rules, down to the variance and skewness of the stabilization time. For the conflict-guard rule under the random central daemon, it also provides exact results."
+license: MIT

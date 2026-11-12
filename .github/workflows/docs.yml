@@ -1,0 +1,168 @@
+# This workflow builds the Sphinx docs on each push to main,
+# and publishes them on GitHub Pages via artifact upload
+# (Settings > Pages > Build and deployment > Source: GitHub Actions).
+#
+# The notebooks of docs/ stored without outputs are executed first, in
+# parallel (one job each, as in gismap): the companion notebooks assert their
+# checks, so a failing check fails the build. Executed notebooks are cached on
+# the notebook, the lockfile and the package sources; the docs are then built
+# without re-execution, the other notebooks with their stored outputs.
+
+name: docs
+
+on:
+  workflow_dispatch:
+    inputs:
+      full_rebuild:
+        description: 'Force full rebuild (re-execute all notebooks, ignore cache)'
+        type: boolean
+        default: false
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+env:
+  UV_PYTHON: "3.12"  # numba does not support the most recent Python yet
+
+jobs:
+
+  list-notebooks:
+    runs-on: ubuntu-latest
+    outputs:
+      notebooks: ${{ steps.find.outputs.notebooks }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - id: find
+        # Notebooks stored without outputs (the companion notebooks, which
+        # assert their checks); notebooks stored with outputs (the
+        # tutorials, basics takes about 10 min on 16 cores) are rendered as is.
+        run: |
+          notebooks=$(python3 - <<'EOF'
+          import json, pathlib
+          found = []
+          for p in sorted(pathlib.Path("docs").rglob("*.ipynb")):
+              cells = json.loads(p.read_text(encoding="utf-8"))["cells"]
+              if ".ipynb_checkpoints" not in p.parts and not any(c.get("outputs") for c in cells):
+                  found.append(str(p))
+          print(json.dumps(found))
+          EOF
+          )
+          echo "notebooks=$notebooks" >> "$GITHUB_OUTPUT"
+
+  execute-notebooks:
+    needs: list-notebooks
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        notebook: ${{ fromJson(needs.list-notebooks.outputs.notebooks) }}
+    steps:
+
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Cache executed notebook
+        if: inputs.full_rebuild != true
+        id: nb-cache
+        uses: actions/cache@v6
+        with:
+          path: .notebook-cache
+          key: nb-${{ hashFiles(matrix.notebook, 'uv.lock', 'tinto/**/*.py') }}-${{ matrix.notebook }}
+
+      - name: Restore from cache
+        if: steps.nb-cache.outputs.cache-hit == 'true'
+        run: cp .notebook-cache/executed.ipynb "${{ matrix.notebook }}"
+
+      - name: Set up uv
+        if: steps.nb-cache.outputs.cache-hit != 'true'
+        uses: astral-sh/setup-uv@v10.3.3  # no major tags since v8: full version
+        with:
+          version: "0.13.6"  # latest uv whose checksum this setup-uv verifies
+
+      - name: Execute notebook
+        if: steps.nb-cache.outputs.cache-hit != 'true'
+        run: |
+          uv sync
+          mkdir -p .notebook-cache
+          uv run jupyter nbconvert --execute --to notebook --inplace \
+            "${{ matrix.notebook }}" --ExecutePreprocessor.timeout=1800
+          cp "${{ matrix.notebook }}" .notebook-cache/executed.ipynb
+
+      - name: Upload executed notebook
+        run: |
+          mkdir -p _upload/$(dirname "${{ matrix.notebook }}")
+          cp "${{ matrix.notebook }}" "_upload/${{ matrix.notebook }}"
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: notebook-${{ strategy.job-index }}
+          path: _upload/
+          retention-days: 1
+
+  build:
+    needs: execute-notebooks
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v10.3.3  # no major tags since v8: full version
+        with:
+          version: "0.13.6"  # latest uv whose checksum this setup-uv verifies
+
+      - name: Setup Pandoc
+        uses: pandoc/actions/setup@v1
+        with:
+          version: '3.13'
+
+      - run: uv sync
+
+      - name: Download executed notebooks
+        uses: actions/download-artifact@v8
+        with:
+          pattern: notebook-*
+          path: _nb
+          merge-multiple: true
+
+      - name: Overlay executed notebooks
+        run: |
+          find _nb -name "*.ipynb" | while read nb; do
+            cp "$nb" "${nb#_nb/}"
+          done
+
+      - name: Build Sphinx documentation
+        run: NBSPHINX_EXECUTE=never uv run sphinx-build -a -E -b html docs build
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: build/
+
+  deploy:
+    if: github.ref == 'refs/heads/main'
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5
