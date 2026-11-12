@@ -1,5 +1,10 @@
 # History
 
+## 0.1.1 (2026-11-12): README fix
+
+- The logo of the README shows on PyPI (absolute URL).
+- Software Heritage badge.
+
 ## 0.1.0 (2026-11-11): First release
 
 - First release on PyPI.

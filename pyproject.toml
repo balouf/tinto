@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "tinto"
-version = "0.1.0"
+version = "0.1.1"
 description = "How long does a self-stabilizing graph coloring take to settle? Tinto measures it with a Numba-compiled Monte Carlo over pluggable graphs, guards, schedulers and recoloring rules, down to the variance and skewness of the stabilization time. For the conflict-guard rule under the random central daemon, it also provides exact results."
 readme = ".github/README.md"
 requires-python = ">=3.10"

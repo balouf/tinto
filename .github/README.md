@@ -1,4 +1,4 @@
-# <img src="../docs/_static/logo.svg" alt="Tinto logo" width="48" valign="middle" /> Tinto
+# <img src="https://balouf.github.io/tinto/_static/logo.svg" alt="Tinto logo" width="48" valign="middle" /> Tinto
 
 
 [![PyPI Status](https://img.shields.io/pypi/v/tinto.svg)](https://pypi.python.org/pypi/tinto)
@@ -6,6 +6,7 @@
 [![Documentation Status](https://github.com/balouf/tinto/actions/workflows/docs.yml/badge.svg?branch=main)](https://github.com/balouf/tinto/actions?query=workflow%3Adocs)
 [![License: MIT](https://img.shields.io/badge/license-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Code Coverage](https://codecov.io/gh/balouf/tinto/branch/main/graphs/badge.svg)](https://codecov.io/gh/balouf/tinto/tree/main)
+[![SWH](https://archive.softwareheritage.org/badge/origin/https://github.com/balouf/tinto/)](https://archive.softwareheritage.org/browse/origin/?origin_url=https://github.com/balouf/tinto)
 
 How long does a self-stabilizing graph coloring take to settle? Tinto measures it with a Numba-compiled Monte Carlo over pluggable graphs, guards, schedulers and recoloring rules, down to the variance and skewness of the stabilization time. For the conflict-guard rule under the random central daemon, it also provides exact results.
 

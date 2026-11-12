@@ -5,8 +5,8 @@ message: >-
   If you use this software, please cite it using the
   metadata from this file.
 type: software
-version: 0.1.0
-date-released: "2026-11-11"
+version: 0.1.1
+date-released: "2026-11-12"
 authors:
   - family-names: Mathieu
     given-names: Fabien
