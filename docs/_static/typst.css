@@ -1,15 +1,21 @@
 /* Papers in their web edition (Typst HTML export), inside the docs.
    The content of such a page sits in <div class="typst"> blocks between the
-   headings (see the generated page). These rules come from web.css of
-   typst-thesis-web 0.2.1, scoped to those blocks and fed with the colors of
-   pydata-sphinx-theme; its layout rules (title, side table of contents) are
-   left out, the theme provides them. */
+   headings (see the generated page), styled by web-content.css: the content
+   stylesheet of the web layer of typst-thesis-web, copied unchanged from the
+   copy of the layer that the sources of the paper vendor (refresh it when the
+   layer is updated). This file feeds it with the colors and fonts of
+   pydata-sphinx-theme. */
 
 .typst {
-  --typst-muted: var(--pst-color-text-muted);
-  --typst-border: var(--pst-color-border);
-  --typst-surface: var(--pst-color-surface);
-  --typst-bg: var(--pst-color-background);
+  --color-text: var(--pst-color-text-base);
+  --color-text-muted: var(--pst-color-text-muted);
+  --color-bg: var(--pst-color-background);
+  --color-sidebar-bg: var(--pst-color-surface);
+  --color-border: var(--pst-color-border);
+  --color-border-strong: var(--pst-color-border);
+  --color-link: var(--pst-color-link);
+  --font-math: "New Computer Modern Math", "Latin Modern Math", "STIX Two Math", "Cambria Math", math;
+  --font-heading: var(--pst-font-family-heading);
   --box-fill-share: 100%;
   --frame-filter: none;
 }
@@ -17,86 +23,3 @@ html[data-theme="dark"] .typst {
   --box-fill-share: 0%;
   --frame-filter: invert(1) hue-rotate(180deg);
 }
-
-.typst p { margin: 0 0 1em; }
-.typst > div:not([class]) { margin: 1em 0; }
-
-/* Mathematics (MathML, rendered by the browser) */
-.typst math { font-family: "New Computer Modern Math", "Latin Modern Math", "STIX Two Math", "Cambria Math", math; }
-.typst math[display="block"] { display: block math; margin: 1em 0; overflow-x: auto; overflow-y: hidden; }
-/* Numbered equation: equation and number share one grid cell. */
-.typst .eq { display: grid; align-items: center; margin: 1em 0; }
-.typst .eq > * { grid-area: 1 / 1; }
-.typst .eq > :first-child { margin: 0; min-width: 0; padding-inline: 3.5em; }
-.typst .eq > .eq-num { justify-self: end; color: var(--typst-muted); }
-
-/* Drawings: SVG frames, black on transparent, inverted on a dark page */
-.typst svg { max-width: 100%; height: auto !important; filter: var(--frame-filter); }
-.typst figure > svg, .typst > svg { margin-inline: auto; }
-/* A frame set as a block (a grid, a drawing) is spaced like a paragraph. */
-.typst svg[style*="display: block"] { margin-block: 1em; }
-.typst figure > svg[style*="display: block"] { margin-block: 0; }
-/* Photographs keep their colors inside a frame that a dark page inverts. */
-.typst svg image:is([*|href^="data:image/png"], [*|href^="data:image/jpeg"], [*|href^="data:image/gif"], [*|href^="data:image/webp"]) {
-  filter: var(--frame-filter);
-}
-
-/* Figures */
-.typst figure { margin: 1.5em 0; text-align: center; }
-.typst figcaption { font-size: 0.9em; color: var(--typst-muted); margin-top: 0.5em; text-align: left; }
-.typst .caption-label { font-weight: 600; color: var(--pst-color-text-base); }
-
-/* Statements (theorems, lemmas...) and boxes */
-.typst .env { margin: 1.2em 0; padding-left: 1em; border-left: 3px solid var(--typst-border); }
-.typst .env:has(> .box), .typst .env-plain { padding-left: 0; border-left: none; }
-.typst .box {
-  margin: 1em 0;
-  padding: 0.8em 1em;
-  border: 1px solid var(--box-stroke, transparent);
-  border-left-width: 4px;
-  border-radius: 4px;
-  --box-tint: color-mix(in srgb, var(--box-stroke, var(--box-fill, transparent)) 16%, var(--typst-bg));
-  background: color-mix(in srgb, var(--box-fill, transparent) var(--box-fill-share), var(--box-tint));
-}
-.typst .env > .box { margin: 0; }
-.typst .env p:last-child, .typst .box p:last-child { margin-bottom: 0; }
-
-/* Emphasis around block content (an italic statement body with paragraphs) */
-.typst div.em { display: inline; font-style: italic; }
-.typst div.strong { display: inline; font-weight: bold; }
-.typst div.em::before, .typst div.strong::before { content: " "; }
-.typst div.em > p:first-child, .typst div.strong > p:first-child { display: inline; }
-.typst div.em > p:first-child::after, .typst div.strong > p:first-child::after { content: ""; display: block; margin-bottom: 1em; }
-
-.typst ol.enum-custom { list-style: none; padding-left: 2.5em; }
-.typst ol.enum-custom > li > .enum-num { display: inline-block; min-width: 2em; margin-left: -2.5em; text-align: right; }
-
-/* Notes and bibliography */
-.typst section[role="doc-endnotes"] { margin-top: 2em; padding-top: 1em; border-top: 1px solid var(--typst-border); font-size: 0.9em; color: var(--typst-muted); }
-.typst section[role="doc-endnotes"] ol { padding-left: 0; margin: 0; }
-.typst section[role="doc-endnotes"] li { margin-bottom: 0.5em; }
-.typst [role="doc-backlink"] { margin-right: 0.3em; }
-.typst section[role="doc-bibliography"] { font-size: 0.92em; }
-.typst section[role="doc-bibliography"] ul { padding-left: 0; list-style: none; }
-.typst section[role="doc-bibliography"] li { margin-bottom: 0.6em; }
-.typst section[role="doc-bibliography"] .prefix { margin-right: 0.5em; }
-
-/* Title block: authors, abstract, keywords, metadata */
-.typst .authors { list-style: none; padding: 0; margin: 0 0 1rem; display: grid; gap: 0.5rem; }
-.typst .authors .name { font-weight: 600; }
-.typst .authors .affil { display: block; font-size: 0.9em; color: var(--typst-muted); line-height: 1.4; }
-.typst .orcid, .typst .email {
-  font-size: 0.7em;
-  vertical-align: 0.15em;
-  padding: 0 0.35em;
-  border: 1px solid var(--typst-border);
-  border-radius: 1em;
-  color: var(--typst-muted);
-  text-decoration: none;
-}
-.typst .abstract { padding: 1rem 1.25rem; margin-bottom: 1rem; background: var(--typst-surface); border-radius: 6px; }
-.typst .abstract p:last-child { margin-bottom: 0; }
-.typst .keywords { font-size: 0.9em; color: var(--typst-muted); }
-.typst .meta { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 0.3em 1em; margin: 0 0 1rem; font-size: 0.9em; color: var(--typst-muted); }
-.typst .meta dt { font-weight: 600; }
-.typst .meta dd { margin: 0; overflow-wrap: anywhere; }

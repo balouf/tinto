@@ -18,11 +18,13 @@
 # absolute, like shown here.
 #
 import os
+import re
 import sys
 
 sys.path.insert(0, os.path.abspath(".."))
 
 import tinto
+from docutils import nodes
 
 # -- General configuration ---------------------------------------------
 
@@ -157,8 +159,9 @@ html_theme_options = {
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ["_static"]
-# Web editions of the papers (Typst HTML export), see docs/papers/.
-html_css_files = ["typst.css"]
+# Web editions of the papers (Typst HTML export), see docs/papers/: the content
+# stylesheet of the web layer and the theme colors it takes (typst.css).
+html_css_files = ["typst.css", "web-content.css"]
 
 html_favicon = "_static/logo.svg"
 
@@ -217,3 +220,33 @@ texinfo_documents = [
         "Miscellaneous",
     ),
 ]
+
+
+# -- Anchors of the web editions of the papers --------------------------------
+
+# A notebook links to a statement of a paper as [Theorem 1](report.md#thm-mean).
+# nbsphinx turns such a link into a reference to the label
+# "/<docname>.md#<id>", which it creates for the sections of every page; the
+# statements, equations and figures of a paper are elements of its raw HTML
+# blocks, so their ids get the same labels here. A link to a missing id warns.
+_TYPST_ID = re.compile(r'<[a-z][a-z0-9]*\s[^>]*?\bid="([^"]+)"')
+_NOT_AN_ANCHOR = re.compile(r"g[0-9A-Fa-f]+|loc-\d+")  # SVG glyphs, Typst locations
+
+
+def _typst_anchor_labels(app, doctree):
+    env = app.env
+    ext = str(env.doc2path(env.docname, base=False))[len(env.docname) :]
+    std = env.get_domain("std")
+    for raw in doctree.findall(nodes.raw):
+        if "html" not in raw.get("format", "").split():
+            continue
+        for anchor in _TYPST_ID.findall(raw.astext()):
+            if _NOT_AN_ANCHOR.fullmatch(anchor):
+                continue
+            label = f"/{env.docname}{ext}#{anchor}".lower()
+            std.labels[label] = (env.docname, anchor, anchor)
+            std.anonlabels[label] = (env.docname, anchor)
+
+
+def setup(app):
+    app.connect("doctree-read", _typst_anchor_labels)
